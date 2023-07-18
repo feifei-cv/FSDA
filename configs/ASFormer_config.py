@@ -1,0 +1,12 @@
+num_layers = 10
+num_f_maps = 64
+features_dim = 2048
+batch_size = 1
+lr = 0.0005
+num_epochs = 120
+channel_mask_rate = 0.3
+dataset_root = './dataset'
+model_root = './model'
+result_root ='./result'
+record_root = './record'
+iou_thresholds = [0.1, 0.25, 0.5]
