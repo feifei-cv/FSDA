@@ -306,7 +306,7 @@ class MyTransformer(nn.Module):
         super(MyTransformer, self).__init__()
         self.encoder = Encoder(num_layers, r1, r2, num_f_maps, input_dim, num_classes, channel_masking_rate, att_type='sliding_att', alpha=1)
         self.decoders = nn.ModuleList([copy.deepcopy(Decoder(num_layers, r1, r2, num_f_maps, num_classes, num_classes, att_type='sliding_att', alpha=exponential_descrease(s))) for s in range(num_decoders)]) # num_decoders
-        
+
         
     def forward(self, x, mask):
         out, feature = self.encoder(x, mask)
@@ -329,6 +329,7 @@ class Trainer:
         print('Model Size: ', sum(p.numel() for p in self.model.parameters()))
         self.mse = nn.MSELoss(reduction='none')
         self.num_classes = num_classes
+        print('GPU 3090 ASFormer')
 
     def train(self, save_dir, batch_gen, num_epochs, batch_size, learning_rate, batch_gen_tst=None):
         self.model.train()

@@ -61,6 +61,7 @@ class Trainer:
         self.ce = nn.CrossEntropyLoss(ignore_index=-100)
         self.mse = nn.MSELoss(reduction='none')
         self.num_classes = num_classes
+        print('GPU3090 \n')
 
     def train(self, save_dir, batch_gen, num_epochs, batch_size, learning_rate, device):
         self.model.train()

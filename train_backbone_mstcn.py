@@ -16,13 +16,21 @@ import configs.mstcn_config as cfg
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
+def init_seeds(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    print('seed:', seed)
+
+
 if __name__ == '__main__':
 
-    random.seed(0)
-    np.random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed_all(0)
-    torch.backends.cudnn.deterministic = True
+
+    init_seeds(seed=1)
     device = 'cuda'
     model_name = 'mstcn'
 
@@ -35,7 +43,7 @@ if __name__ == '__main__':
     with open(mapping_file, 'a') as f:
         f.write('Begin training backbone MS-TCN with 3090 GPU \n')
 
-    for dataset in ['gtea', '50salads', 'breakfast']: #
+    for dataset in ['gtea', '50salads']: # 'breakfast'
         for split in ([1, 2, 3, 4, 5]):
             if split == 5 and dataset != '50salads':
                 continue

@@ -21,15 +21,22 @@ from src.refiner_model import RefineAction
 import configs.refiner_config_mstcn as cfg
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
+def init_seeds(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    print('seed:', seed)
+
 
 if __name__ == '__main__':
 
-    np.random.seed(0)
-    random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed_all(0)
-    torch.backends.cudnn.deterministic = True
+    init_seeds(seed=1)
     device = 'cuda'
     pool_backbone_name = ['mstcn']
     main_backbone_name = 'mstcn'
@@ -44,8 +51,8 @@ if __name__ == '__main__':
         f.write('Begin training FSDA with 3090 GPU \n')
     sys.stdout = Logger(mapping_file)
 
-    for dataset in ['gtea', '50salads', 'breakfast']: ## ,
-        for split in ([2,1,3,4,5]):
+    for dataset in ['gtea', '50salads']: ## , 'breakfast'
+        for split in ([1,2,3,4,5]):
             if split == 5 and dataset != '50salads':
                 continue
             print(dataset, split)
@@ -95,8 +102,8 @@ if __name__ == '__main__':
                                          num_classes=num_actions)
             refine_net.to(device)  ### refine net
 
-            optimizer = torch.optim.Adam(curr_model.parameters(), lr=0.00005, weight_decay=1e-5)
-            optimizer_refine = torch.optim.Adam(refine_net.parameters(), lr=0.00015, weight_decay=1e-5)
+            optimizer = torch.optim.Adam(curr_model.parameters(),  lr=cfg.lr, weight_decay=cfg.weight_decay)
+            optimizer_refine = torch.optim.Adam(refine_net.parameters(),  lr=cfg.lr*2, weight_decay=cfg.weight_decay)
 
             for epoch in range(cfg.max_epoch):
                 train_loss, acc = frame_segment_adaptation(train_loader, curr_model, num_actions,
@@ -104,9 +111,6 @@ if __name__ == '__main__':
                 torch.save(curr_model.state_dict(), os.path.join(model_dir, "epoch-" + str(epoch + 1) + ".model"))
                 torch.save(refine_net.state_dict(), os.path.join(model_dir, "epoch-" + str(epoch + 1) + ".opt"))
                 print("[epoch %d]: lr = %f,  epoch loss = %f,   acc = %f" % (epoch + 1, optimizer.param_groups[0]["lr"], train_loss, acc))
-                # del train_loss, acc
-                # torch.cuda.empty_cache()
-
 
             ##saving
             max_epoch = -1
