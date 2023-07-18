@@ -71,12 +71,12 @@ if __name__ == '__main__':
 
             trainer = Trainer(cfg.num_layers, 2, 2, cfg.num_f_maps, cfg.features_dim, num_actions, channel_mask_rate)
 
-            # trainer.train(save_dir=model_dir,
-            #               batch_gen=batch_gen,
-            #               num_epochs=cfg.num_epochs,
-            #               batch_size=cfg.batch_size,
-            #               learning_rate=cfg.lr,
-            #               batch_gen_tst=batch_gen_tst)
+            trainer.train(save_dir=model_dir,
+                          batch_gen=batch_gen,
+                          num_epochs=cfg.num_epochs,
+                          batch_size=cfg.batch_size,
+                          learning_rate=cfg.lr,
+                          batch_gen_tst=batch_gen_tst)
 
             ## saving result
             max_epoch = -1

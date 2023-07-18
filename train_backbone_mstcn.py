@@ -35,7 +35,7 @@ if __name__ == '__main__':
     with open(mapping_file, 'a') as f:
         f.write('Begin training backbone MS-TCN with 3090 GPU \n')
 
-    for dataset in ['gtea', '50salads']: #
+    for dataset in ['gtea', '50salads', 'breakfast']: #
         for split in ([1, 2, 3, 4, 5]):
             if split == 5 and dataset != '50salads':
                 continue

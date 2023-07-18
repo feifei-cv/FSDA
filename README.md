@@ -4,8 +4,8 @@
 2. Unzip the zip file, and re-name the './Datasets/action-segmentation' folder as "./dataset"
 3. Clone git repositories for this repo and Run the script for ASRF
 ```
-git clone https://github.com/feifei-cv/FSAD
-./scripts/install_asrf.sh
+git clone https://github.com/feifei-cv/FSDA.git
+sh ./scripts/install_asrf.sh
 ```
 
 ## Train 
