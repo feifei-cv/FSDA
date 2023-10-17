@@ -111,7 +111,7 @@ def segment_bars(save_path, *labels):
     plt.close()
  
  
-def segment_bars_with_confidence(save_path, confidence, *labels):
+def segment_bars_with_confidence(save_path, confidence,confidence_backbone, *labels):
     num_pics = len(labels) + 1
     color_map = plt.get_cmap('seismic')
  
@@ -119,24 +119,34 @@ def segment_bars_with_confidence(save_path, confidence, *labels):
     barprops = dict(aspect='auto', cmap=color_map,
                     interpolation='nearest', vmin=0)
     fig = plt.figure(figsize=(15, num_pics * 1.5))
- 
+    # fig, axes = plt.subplots(1,1)
     interval = 1 / (num_pics+1)
+
+    # ax4 = axes
     for i, label in enumerate(labels):
         i = i + 1
-        ax1 = fig.add_axes([0, 1-i*interval, 1, interval])
+        ax1 = fig.add_axes([0, 1-i*interval, 1, interval*0.95])
         ax1.imshow([label], **barprops)
- 
-    ax4 = fig.add_axes([0, interval, 1, interval])
+        ax1.set_axis_off()
+
+    ax4 = fig.add_axes([0, interval, 1, interval*0.95])
     ax4.set_xlim(0, len(confidence))
     ax4.set_ylim(0, 1)
-    ax4.plot(range(len(confidence)), confidence)
-    ax4.plot(range(len(confidence)), [0.3] * len(confidence), color='red', label='0.5')
- 
+    ax4.plot(range(len(confidence)), confidence, color='blue')
+    ax4.plot(range(len(confidence_backbone)), confidence_backbone, color='red')
+    # ax4.plot(range(len(confidence)), [0.3] * len(confidence), color='red', label='0.5')
+
+    ax4.set_xlabel('frame', fontsize=11)  # 横轴标签
+    # ax4.set_ylabel('confidence', fontsize=11)  # 纵轴标
+    ax4.legend(['FSDA', 'ASFormer'])
+    ax4.get_yaxis().set_visible(False)
+    # ax4.set_axis_off()
+    # plt.axis('off')
     if save_path is not None:
         plt.savefig(save_path)
     else:
         plt.show()
- 
+    # plt.show()
     plt.close()
  
  

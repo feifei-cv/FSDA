@@ -1,54 +1,36 @@
 import os
 import csv
 
+num_stages = 4
+num_layers = 10
+num_f_maps = 64
+features_dim = 2048
 batch_size = 1
-boundary_th = 0.5
-ce = True
-ce_weight = 1.0
-class_weight = True
-csv_dir='./backbones/asrf/csv'
-dampening = 0.0
+lr = 0.0005
+weight_decay = 0.00001
+num_epochs=100
+max_epoch = 50
+
 dataset_root = './dataset'
 model_root = './model'
+best_root = './best_model'
 result_root ='./result'
 record_root = './record'
-focal = False
-focal_weight = 1.0
-gstmse = True
-gstmse_index = 'feature'
-gstmse_weight = 1.0
-in_channel = 2048
+csv_dir='./backbones/asrf/csv'
+
+
 iou_thresholds = [0.1, 0.25, 0.5]
-lambda_b = 0.1
-learning_rate = 0.0005
-max_epoch = 50
-momentum = 0.9
-n_features = 64
-n_layers = 10
-n_stages = 4
-n_stages_asb = 4
-n_stages_brb = 4
-nesterov = True
-param_search = False
-tmse = False
-tmse_weight= 0.15
-tolerance= 5
-weight_decay= 0.00001
-
-
-num_stages = n_stages
-num_layers = n_layers
-num_f_maps = n_features
-features_dim = in_channel
-lr = learning_rate
-num_epochs = max_epoch
+num_layers_R = 10
+num_layers_PG=11
+num_R=3
 
 num_splits = dict()
 num_splits['gtea'] = 4
 num_splits['50salads']=5
 num_splits['breakfast']=4
+
 dataset_names = ['gtea', '50salads', 'breakfast']
-backbone_names = ['asrf']
+backbone_names = ['mstcn++']
 best = {bn:{dn:[] for dn in dataset_names} for bn in backbone_names}
 
 for bn in backbone_names:

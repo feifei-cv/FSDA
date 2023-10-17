@@ -16,9 +16,10 @@ from libs.dataset import ActionSegmentationDataset, collate_fn
 from libs.transformer import TempDownSamp, ToTensor
 from src.utils import eval_txts, load_meta, Logger
 from src.predict import predict_refiner
-from src.refiner_train import frame_segment_adaptation
+from src.refiner_train import frame_segment_adaptation_tcn
 from src.refiner_model import RefineAction
 import configs.refiner_config_mstcn as cfg
+
 
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
@@ -34,13 +35,13 @@ def init_seeds(seed):
     print('seed:', seed)
 
 
+
 if __name__ == '__main__':
 
     init_seeds(seed=1)
     device = 'cuda'
-    pool_backbone_name = ['mstcn']
-    main_backbone_name = 'mstcn'
-    model_name = 'FSDA' + '-' + '-'.join(pool_backbone_name)
+    backbone_name = 'mstcn'
+    model_name = 'FSDA' + '-' + '-'.join([backbone_name])
 
     ### log record
     logs_dir = './logs'
@@ -51,8 +52,9 @@ if __name__ == '__main__':
         f.write('Begin training FSDA with 3090 GPU \n')
     sys.stdout = Logger(mapping_file)
 
-    for dataset in ['gtea', '50salads']: ## , 'breakfast'
-        for split in ([1,2,3,4,5]):
+    for dataset in ['gtea','50salads']: ##
+    # for dataset in ['breakfast']:  ##
+        for split in ([1, 2, 3, 4, 5]):#
             if split == 5 and dataset != '50salads':
                 continue
             print(dataset, split)
@@ -85,6 +87,11 @@ if __name__ == '__main__':
                 pin_memory=True
             )
 
+            if dataset == 'breakfast':
+                cfg.lr = 1e-5
+                cfg.weight_decay = 1e-5
+                cfg.max_epoch = 30
+
             curr_model = MultiStageModel(cfg.num_stages,
                                          num_layers=cfg.num_layers,
                                          num_f_maps=cfg.num_f_maps,
@@ -92,6 +99,7 @@ if __name__ == '__main__':
                                          num_classes=num_actions)
             model_pt = os.path.join(cfg.model_root, 'mstcn', dataset,'split_{}'.format(split),
                                     'epoch-{}.model'.format(cfg.best['mstcn'][dataset][split-1]))
+
             print(model_pt)
             curr_model.load_state_dict(torch.load(model_pt))
             curr_model.to(device)  ### backbone
@@ -103,10 +111,10 @@ if __name__ == '__main__':
             refine_net.to(device)  ### refine net
 
             optimizer = torch.optim.Adam(curr_model.parameters(),  lr=cfg.lr, weight_decay=cfg.weight_decay)
-            optimizer_refine = torch.optim.Adam(refine_net.parameters(),  lr=cfg.lr*2, weight_decay=cfg.weight_decay)
+            optimizer_refine = torch.optim.Adam(refine_net.parameters(),  lr=cfg.lr*3, weight_decay=cfg.weight_decay)
 
             for epoch in range(cfg.max_epoch):
-                train_loss, acc = frame_segment_adaptation(train_loader, curr_model, num_actions,
+                train_loss, acc = frame_segment_adaptation_tcn(train_loader, curr_model, num_actions,
                                                            optimizer, optimizer_refine, refine_net, device)
                 torch.save(curr_model.state_dict(), os.path.join(model_dir, "epoch-" + str(epoch + 1) + ".model"))
                 torch.save(refine_net.state_dict(), os.path.join(model_dir, "epoch-" + str(epoch + 1) + ".opt"))
@@ -124,7 +132,7 @@ if __name__ == '__main__':
                              'F1@{}'.format(cfg.iou_thresholds[2])])
             for epoch in range(1, cfg.max_epoch + 1):
                 print('======================EPOCH {}====================='.format(epoch))
-                predict_refiner(curr_model, refine_net, main_backbone_name, model_dir, result_dir,
+                predict_refiner(curr_model, refine_net, backbone_name, model_dir, result_dir,
                                 features_path, vid_list_file_tst,
                                 epoch, actions_dict, device, sample_rate)
                 results = eval_txts(cfg.dataset_root, result_dir, dataset, split, model_name)

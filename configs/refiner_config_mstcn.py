@@ -4,10 +4,10 @@ import csv
 batch_size = 1
 in_channel = 2048
 iou_thresholds = [0.1, 0.25, 0.5]
-learning_rate = 0.00005 ##
+learning_rate = 1e-4 ##
 max_epoch = 50
 n_features = 64
-n_layers = 10
+n_layers = 10 #10
 n_stages = 4
 weight_decay= 1e-5 ##
 

@@ -80,11 +80,11 @@ class SingleStageTCN(nn.Module):
         self.conv_out = nn.Conv1d(n_features, n_classes, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        out = self.conv_in(x)
+        out_feat = self.conv_in(x)
         for layer in self.layers:
-            out = layer(out)
-        out = self.conv_out(out)
-        return out
+            out_feat = layer(out_feat)
+        out = self.conv_out(out_feat)
+        return out, out_feat
 
 
 class DilatedResidualLayer(nn.Module):
@@ -275,6 +275,7 @@ class ActionSegmentRefinementFramework(nn.Module):
         self.activation_asb = nn.Softmax(dim=1)
         self.activation_brb = nn.Sigmoid()
 
+
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         out = self.conv_in(x)
         for layer in self.shared_layers:
@@ -283,24 +284,28 @@ class ActionSegmentRefinementFramework(nn.Module):
         out_cls = self.conv_cls(out)
         out_bound = self.conv_bound(out)
 
+        outputs_feat = out.unsqueeze(0)
+        # outputs = out_cls.unsqueeze(0)
+
         if self.training:
             outputs_cls = [out_cls]
             outputs_bound = [out_bound]
 
             for as_stage in self.asb:
-                out_cls = as_stage(self.activation_asb(out_cls))
+                out_cls, out_feat = as_stage(self.activation_asb(out_cls))
+                outputs_feat = torch.cat((outputs_feat, out_feat.unsqueeze(0)), dim=0)
                 outputs_cls.append(out_cls)
 
             for br_stage in self.brb:
-                out_bound = br_stage(self.activation_brb(out_bound))
+                out_bound,_ = br_stage(self.activation_brb(out_bound))
                 outputs_bound.append(out_bound)
 
-            return (outputs_cls, outputs_bound)
+            return outputs_cls, outputs_bound, outputs_feat
         else:
             for as_stage in self.asb:
-                out_cls = as_stage(self.activation_asb(out_cls))
+                out_cls, _ = as_stage(self.activation_asb(out_cls))
 
             for br_stage in self.brb:
-                out_bound = br_stage(self.activation_brb(out_bound))
+                out_bound, _ = br_stage(self.activation_brb(out_bound))
 
             return (out_cls, out_bound)

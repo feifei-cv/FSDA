@@ -289,44 +289,6 @@ def load_meta(data_root, model_root, result_root, record_root, dataset, split, m
     return actions_dict, num_actions, gt_path, features_path, vid_list_file, vid_list_file_tst, sample_rate, model_dir, result_dir, record_dir
 
 
-def load_meta1(data_root, model_root, result_root, record_root, dataset, split, model_name):
-    mapping_file = os.path.join('./dataset/', dataset, 'mapping.txt')
-    file_ptr = open(mapping_file, 'r')
-    actions = file_ptr.read().split('\n')[:-1]
-    file_ptr.close()
-    actions_dict = dict()
-    for a in actions:
-        actions_dict[a.split()[1]] = int(a.split()[0])
-
-    num_actions = len(actions_dict)
-    gt_path = os.path.join(data_root, dataset, 'groundTruth/')
-    features_path = os.path.join(data_root, dataset, 'features/')
-    vid_list_file = os.path.join(data_root, dataset, 'splits', 'train.split' + str(split) + '.bundle')
-    vid_list_file_tst = os.path.join(data_root, dataset, 'splits', 'test.split' + str(split) + '.bundle')
-
-    sample_rate = 1
-    if dataset == "50salads":
-        sample_rate = 2
-
-    model_dir = os.path.join(model_root, model_name +'1', dataset, 'split_' + str(split))
-    result_dir = os.path.join(result_root, model_name, dataset, 'split_' + str(split))
-    record_dir = os.path.join(record_root, model_name, dataset)
-
-    if not os.path.exists(model_dir):
-        os.makedirs(model_dir)
-    if not os.path.exists(result_dir):
-        os.makedirs(result_dir)
-    if not os.path.exists(record_dir):
-        os.makedirs(record_dir)
-
-    print('Created :' + model_dir)
-    print('Created :' + result_dir)
-    print('Created :' + record_dir)
-
-    return actions_dict, num_actions, gt_path, features_path, vid_list_file, vid_list_file_tst, sample_rate, model_dir, result_dir, record_dir
-
-
-
 def load_meta_best_eval(data_root, result_root, dataset, split, model_name):
     mapping_file = os.path.join('./dataset/', dataset, 'mapping.txt')
 
