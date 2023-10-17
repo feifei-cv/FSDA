@@ -40,7 +40,7 @@ def train(
         batch_size = x.shape[0]
 
         # compute output and loss
-        output_cls, output_bound = model(x)
+        output_cls, output_bound,_ = model(x)
 
         loss = 0.0
         if isinstance(output_cls, list):

@@ -423,8 +423,9 @@ class Trainer:
  
                     batch_target = batch_target.squeeze()
                     confidence, predicted = confidence.squeeze(), predicted.squeeze()
- 
-                    segment_bars_with_confidence(results_dir + '/{}_stage{}.png'.format(vid, i),
+
+                    save_path = results_dir + '/{}_stage{}.png'.format(vid, i)
+                    segment_bars_with_confidence(None,
                                                  confidence.tolist(),
                                                  batch_target.tolist(), predicted.tolist())
 
