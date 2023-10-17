@@ -25,20 +25,24 @@ import configs.refiner_config_mstcn as cfg
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 def init_seeds(seed):
-    np.random.seed(seed)
+
     random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
+    np.random.seed(seed)
     torch.backends.cudnn.benchmark = False
-    print('seed:', seed)
+    torch.backends.cudnn.deterministic = True
+
+
 
 
 
 if __name__ == '__main__':
 
-    init_seeds(seed=1)
+    seed = 0
+    init_seeds(seed=seed)
     device = 'cuda'
     backbone_name = 'mstcn'
     model_name = 'FSDA' + '-' + '-'.join([backbone_name])
@@ -52,9 +56,8 @@ if __name__ == '__main__':
         f.write('Begin training FSDA with 3090 GPU \n')
     sys.stdout = Logger(mapping_file)
 
-    for dataset in ['gtea','50salads']: ##
-    # for dataset in ['breakfast']:  ##
-        for split in ([1, 2, 3, 4, 5]):#
+    for dataset in ['gtea', '50salads']: ##'breakfast'
+        for split in ([1, 2, 3, 4, 5]):
             if split == 5 and dataset != '50salads':
                 continue
             print(dataset, split)
@@ -87,11 +90,14 @@ if __name__ == '__main__':
                 pin_memory=True
             )
 
+            #############
+            cfg.lr = 0.0001
+            cfg.max_epoch = 50
             if dataset == 'breakfast':
                 cfg.lr = 1e-5
                 cfg.weight_decay = 1e-5
                 cfg.max_epoch = 30
-
+            print('seed:', seed, 'weight_decay:', cfg.weight_decay, 'lr:', cfg.lr, 'epoch:', cfg.max_epoch)
             curr_model = MultiStageModel(cfg.num_stages,
                                          num_layers=cfg.num_layers,
                                          num_f_maps=cfg.num_f_maps,

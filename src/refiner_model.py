@@ -69,7 +69,6 @@ class DilatedResidualLayer(nn.Module):
         self.conv_dilated = nn.Conv1d(in_channels, out_channels, 3, padding=dilation, dilation=dilation)
         self.conv_1x1 = nn.Conv1d(out_channels, out_channels, 1)
         self.dropout = nn.Dropout(p=0.55, inplace=True)
-        # self.dropout = nn.Dropout()
 
     def forward(self, x):
         out = F.relu(self.conv_dilated(x))

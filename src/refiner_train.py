@@ -188,9 +188,9 @@ def frame_segment_adaptation_tcn(train_loader, model, num_classes, optimizer, op
             p_frame = refine_net(F.softmax(p, dim=1))
 
             ### Segment encoder: get segment feature and segment pseudo-label
-            action_idx = torch.argmax(p, dim=1).squeeze().detach() ##
-            # weight = 1.0 + torch.exp(-entropy(F.softmax(p, dim=1).detach())) ##
-            weight = torch.ones(1, p.size(-1)).to(device)  ## no weights
+            action_idx = torch.argmax(p, dim=1).squeeze()
+            weight = 1.0 + torch.exp(-entropy(F.softmax(p, dim=1))) ##
+            # weight = torch.ones(1, p.size(-1)).to(device)  ## no weights
             segment_feat, segment_idx, label_probility, GTlabel_list, Predseg_list = \
                 seg_encode(action_idx.to(device), f_feat.to(device), weight, t)
             label_emb = label_embedding(torch.hstack(Predseg_list))
@@ -202,12 +202,12 @@ def frame_segment_adaptation_tcn(train_loader, model, num_classes, optimizer, op
             confidences = F.softmax(segment_pred, dim=1).max(dim=1)[0].squeeze()  # confidence as weights
 
             ###training loss
-            loss_kl = F.kl_div(F.log_softmax(seg_roll_predict.detach(), dim=1), F.softmax(p_frame, dim=1)) #
+            loss_kl = F.kl_div(F.log_softmax(seg_roll_predict.detach(), dim=1), F.softmax(p_frame, dim=1))
             # loss_kl = torch.nn.L1Loss()(F.softmax(seg_roll_predict.detach(), dim=1), F.softmax(p_frame, dim=1)) ## l1
             # loss_kl = torch.mean(JS_Divergence_With_Temperature(seg_roll_predict.detach(), p_frame,1)) ## JS
             loss_segment = soft_ce(segment_predictions, segment_soft_label.to(device), weights=confidences)  ## segment loss
             loss_align = transport_loss(segment_feat.squeeze(0), f_feat.squeeze(0).permute(1, 0))  ## transport loss
-            loss += (loss_segment  ) # ##+ loss_align - 1.0*loss_kl
+            loss += (loss_segment + loss_align - loss_kl)
 
         loss.backward()
         optimizer_refine.step()
