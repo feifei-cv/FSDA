@@ -23,4 +23,4 @@ python train_FSDA_ASFormer.py
 
 ## Acknowledgements
 We hugely appreciate for previous researchers in this field. Especially [MS-TCN](https://github.com/yabufarha/ms-tcn), [ASFormer](https://github.com/ChinaYi/ASFormer), [ASRF](https://github.com/yiskw713/asrf),
-[HASR](https://github.com/cotton-ahn/HASR_iccv2021), made a huge contribution for future researchers like us!
+[HASR](https://github.com/cotton-ahn/HASR_iccv2021).
