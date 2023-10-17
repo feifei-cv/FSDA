@@ -43,7 +43,7 @@ if __name__ == '__main__':
     with open(mapping_file, 'a') as f:
         f.write('Begin training backbone MS-TCN with 3090 GPU \n')
 
-    for dataset in ['gtea', '50salads']: # 'breakfast'
+    for dataset in ['breakfast','gtea', '50salads']: #
         for split in ([1, 2, 3, 4, 5]):
             if split == 5 and dataset != '50salads':
                 continue
@@ -69,12 +69,12 @@ if __name__ == '__main__':
 
             trainer = Trainer(cfg.num_stages, cfg.num_layers, cfg.num_f_maps, cfg.features_dim, num_actions)
 
-            trainer.train(save_dir=model_dir,
-                          batch_gen=batch_gen,
-                          num_epochs=cfg.num_epochs,
-                          batch_size=cfg.batch_size,
-                          learning_rate=cfg.lr,
-                          device=device)
+            # trainer.train(save_dir=model_dir,
+            #               batch_gen=batch_gen,
+            #               num_epochs=cfg.num_epochs,
+            #               batch_size=cfg.batch_size,
+            #               learning_rate=cfg.lr,
+            #               device=device)
 
             ## saving result
             max_epoch = -1

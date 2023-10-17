@@ -1,56 +1,49 @@
 import csv
 import sys
 import os
-import numpy as np
 import torch
 import random
 import time
 
-
-sys.path.append('./backbones/ASFormer')
-
-from model import Trainer
+sys.path.append('./backbones/MS-TCN2')
 from batch_gen import BatchGenerator
+from model import Trainer
 
 from src.utils import load_meta, eval_txts, Logger
 from src.predict import predict_backbone
-import configs.ASFormer_config as cfg
-
+import configs.mstcn_plus_config as cfg
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
+
 def init_seeds(seed):
-    np.random.seed(seed)
     random.seed(seed)
     torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
     print('seed:', seed)
 
 
 if __name__ == '__main__':
 
-    init_seeds(seed=19980125)
+    init_seeds(seed=0)
     device = 'cuda'
-    model_name = 'ASFormer'  # always "mstcn" in this notebook ASFormer
+    model_name = 'mstcn++'
 
     ### log record
-    logs_dir = '。/logs'
+    logs_dir = './logs'
     if not os.path.exists(logs_dir):
         os.makedirs(logs_dir)
-    mapping_file = 'logs/train_backbone_ASFormer_' + time.ctime()+ '.txt'
-    sys.stdout = Logger(mapping_file)  ### log record
+    mapping_file = 'logs/train_backbone_mstcn_plus_' + time.ctime()+ '.txt'
+    sys.stdout = Logger(mapping_file)
     with open(mapping_file, 'a') as f:
-        f.write('Begin training backbone ASFormer with 3090 GPU \n')
+        f.write('Begin training backbone MS-TCN++ with 3090 GPU \n')
 
-    for dataset in ['gtea', '50salads']: #, 'breakfast'
-        for split in ([ 1, 2, 3, 4, 5]): #
+    for dataset in ['50salads']: #,'breakfast''gtea',
+        for split in ([1, 2, 3, 4, 5]):
             if split == 5 and dataset != '50salads':
                 continue
             print(dataset, split)
-
             actions_dict, \
             num_actions, \
             gt_path, \
@@ -62,28 +55,17 @@ if __name__ == '__main__':
             result_dir, \
             record_dir = load_meta(cfg.dataset_root, cfg.model_root, cfg.result_root, cfg.record_root, dataset, split,
                                    model_name)
-
-            channel_mask_rate = 0.3
-            # To prevent over-fitting for GTEA. Early stopping & large dropout rate
-            if dataset == "gtea":
-                channel_mask_rate = 0.5
-            if dataset == 'breakfast':
-                cfg.lr = 0.0001
-
             batch_gen = BatchGenerator(num_actions, actions_dict, gt_path, features_path, sample_rate)
             batch_gen.read_data(vid_list_file)
 
-            batch_gen_tst = BatchGenerator(num_actions, actions_dict, gt_path, features_path, sample_rate)
-            batch_gen_tst.read_data(vid_list_file_tst)
-
-            trainer = Trainer(cfg.num_layers, 2, 2, cfg.num_f_maps, cfg.features_dim, num_actions, channel_mask_rate)
-            #
+            trainer = Trainer(cfg.num_layers_PG, cfg.num_layers_R, cfg.num_R, cfg.num_f_maps, cfg.features_dim, num_actions, dataset,
+                              split)
             trainer.train(save_dir=model_dir,
                           batch_gen=batch_gen,
                           num_epochs=cfg.num_epochs,
                           batch_size=cfg.batch_size,
                           learning_rate=cfg.lr,
-                          batch_gen_tst=batch_gen_tst)
+                          device=device)
 
             ## saving result
             max_epoch = -1
