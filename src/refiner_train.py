@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from libs.utils import entropy, seg_encode, rollout
 from libs.postprocess import PostProcessor
 import configs.asrf_config as asrf_cfg
-
+from scipy.ndimage import gaussian_filter1d
 
 class CrossEntropyLabelSmooth(nn.Module):
 
@@ -175,7 +175,7 @@ def frame_segment_adaptation_tcn(train_loader, model, num_classes, optimizer, op
         ## training refiner: improving accuracy
         loss_ema = 0.0
         for j, p_ema in enumerate(action_pred):
-            frame_pre_ema  = refine_net(F.softmax(p_ema.detach(), dim=1))
+            frame_pre_ema = refine_net(F.softmax(p_ema.detach(), dim=1))
             loss_ema += ce(frame_pre_ema.transpose(2, 1).contiguous().view(-1, num_classes), t.view(-1))
         loss_ema.backward()
 
@@ -290,6 +290,7 @@ def frame_segment_adaptation_tcn_plus(train_loader, model, num_classes, optimize
     acc = float(correct)/total
     return epoch_loss/len(train_loader), acc
 
+
 def frame_segment_adaptation_ASF(train_loader, model, num_classes, optimizer, optimizer_refine, refine_net, device):
 
     ce = nn.CrossEntropyLoss(ignore_index=-100)
@@ -361,3 +362,82 @@ def frame_segment_adaptation_ASF(train_loader, model, num_classes, optimizer, op
 
     acc = float(correct)/total
     return epoch_loss/len(train_loader), acc
+
+
+def frame_segment_adaptation_DiffAct(train_train_dataset, curr_model, num_classes, optimizer, optimizer_refine,
+                                     refine_net, device):
+
+    ce = nn.CrossEntropyLoss(ignore_index=-100)
+    soft_ce = CrossEntropyLabelSmooth(num_classes, device)
+    label_embedding = nn.Embedding(num_classes, 24).to(device)
+    transport_loss = AlignSeg(num_classes, device)
+    epoch_loss = 0.0
+    correct = 0
+    total = 0
+    train_train_loader = torch.utils.data.DataLoader(
+        train_train_dataset, batch_size=1, shuffle=True, num_workers=4)
+    for _, data in enumerate(train_train_loader):
+
+        refine_net.train()
+        curr_model.train()
+        feature, label, boundary, video = data
+        label = label.long()
+        feature, label, boundary = feature.to(device), label.to(device), boundary.to(device)
+        action_pred, frames_feat = curr_model.get_out(feature,
+                                             event_gt=F.one_hot(label, num_classes=num_classes).permute(0, 2, 1),
+                                             boundary_gt=boundary)
+        optimizer.zero_grad()
+        optimizer_refine.zero_grad()
+        ## training refiner: improving accuracy
+        # loss_ema = 0.0
+        frame_pre_ema = refine_net(F.softmax(action_pred.detach(), dim=1))
+        # loss_ema = ce(frame_pre_ema.transpose(2, 1).contiguous().view(-1, num_classes), label.view(-1))
+        event_gt = F.one_hot(label.long(), num_classes=num_classes).permute(0, 2, 1)
+        soft_event_gt = torch.clone(event_gt).cpu().float().numpy()
+        for i in range(soft_event_gt.shape[1]):
+            soft_event_gt[0, i] = gaussian_filter1d(soft_event_gt[0, i], 1.4)  #
+        soft_event_gt = torch.from_numpy(soft_event_gt)
+        loss_ema = - soft_event_gt.to(device) * F.log_softmax(frame_pre_ema, 1)
+        loss_ema = loss_ema.sum(0).sum(0).mean()
+        loss_ema.backward()
+        # train backbone model: reduce over-segmentation
+        # loss = 0.0
+        p_frame = refine_net(F.softmax(action_pred, dim=1))
+        ### Segment encoder: get segment feature and segment pseudo-label
+        action_idx = torch.argmax(action_pred, dim=1).squeeze()
+        weight = 1.0 + torch.exp(-entropy(F.softmax(action_pred, dim=1)))  ##
+        # weight = torch.ones(1, action_pred.size(-1)).to(device)  ## no weights
+        segment_feat, segment_idx, label_probility, GTlabel_list, Predseg_list = \
+            seg_encode(action_idx.to(device), frames_feat.to(device), weight, label)
+        label_emb = label_embedding(torch.hstack(Predseg_list))
+        segment_feats = segment_feat + label_emb.unsqueeze(0)
+        segment_pred = curr_model.decoder.conv_out(segment_feats.permute(0, 2, 1))  ## segment predict
+        segment_soft_label = torch.stack(get_merge(GTlabel_list, label_probility, num_classes))
+        segment_predictions = segment_pred.transpose(2, 1).contiguous().view(-1, num_classes)
+        seg_roll_predict = rollout(segment_idx, segment_pred.permute(0, 2, 1))
+        confidences = F.softmax(segment_pred, dim=1).max(dim=1)[0].squeeze()
+
+        ###training loss
+        loss_kl = F.kl_div(F.log_softmax(seg_roll_predict.detach(), dim=1), F.softmax(p_frame, dim=1))
+        # loss_kl = torch.nn.L1Loss()(F.softmax(seg_roll_predict.detach(), dim=1), F.softmax(p_frame, dim=1)) ## l1
+        # loss_kl = torch.mean(JS_Divergence_With_Temperature(seg_roll_predict.detach(), p_frame,1)) ## JS
+        loss_segment = soft_ce(segment_predictions, segment_soft_label.to(device), weights=confidences)  ## segment loss
+        loss_align = transport_loss(segment_feat.squeeze(0), frames_feat.squeeze(0).permute(1, 0))  ## transport loss
+        loss = (loss_segment + loss_align - loss_kl)
+        loss.backward()
+        optimizer_refine.step()
+        optimizer.step()
+
+        ### count
+        predicted_refine = refine_net(F.softmax(action_pred, dim=1))
+        _, predicted = torch.max(predicted_refine.data, 1)
+
+        correct += ((predicted == label).float().squeeze(1)).sum().item()
+        epoch_loss += loss.item()
+        total += label.size(1)
+
+    acc = float(correct)/total
+    return epoch_loss/len(train_train_loader), acc
+
+
+
