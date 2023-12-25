@@ -370,6 +370,7 @@ def frame_segment_adaptation_DiffAct(train_train_dataset, curr_model, num_classe
     ce = nn.CrossEntropyLoss(ignore_index=-100)
     soft_ce = CrossEntropyLabelSmooth(num_classes, device)
     label_embedding = nn.Embedding(num_classes, 24).to(device)
+    # label_embedding = nn.Embedding(num_classes, 128).to(device)  ## breakfast
     transport_loss = AlignSeg(num_classes, device)
     epoch_loss = 0.0
     correct = 0
