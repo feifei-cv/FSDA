@@ -24,17 +24,6 @@ from src.refiner_train import frame_segment_adaptation_DiffAct
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 
-# def init_seeds(seed):
-#     np.random.seed(seed)
-#     random.seed(seed)
-#     torch.manual_seed(seed)
-#     torch.cuda.manual_seed(seed)
-#     torch.cuda.manual_seed_all(seed)
-#     torch.backends.cudnn.deterministic = True
-#     torch.backends.cudnn.benchmark = False
-#     print('seed:', seed)
-#
-
 class Trainer:
     def __init__(self, encoder_params, decoder_params, diffusion_params, event_list, sample_rate, temporal_aug,
                  set_sampling_seed, postprocess, device):

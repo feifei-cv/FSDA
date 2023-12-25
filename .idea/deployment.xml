@@ -7,6 +7,10 @@
           <mappings>
             <mapping deploy="/paper/paper6-FSDA" local="$PROJECT_DIR$" web="/" />
           </mappings>
+          <excludedPaths>
+            <excludedPath path="/paper/paper6-FSDA/backbones/DiffAct/trained_models" />
+            <excludedPath path="/paper/paper6-FSDA/DiffAct/trained_models" />
+          </excludedPaths>
         </serverdata>
       </paths>
     </serverData>
