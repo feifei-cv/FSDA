@@ -17,7 +17,7 @@ from src.predict import predict_backbone
 import configs.ASFormer_config as cfg
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 def init_seeds(seed):
     np.random.seed(seed)
@@ -45,8 +45,8 @@ if __name__ == '__main__':
     with open(mapping_file, 'a') as f:
         f.write('Begin training backbone ASFormer with 3090 GPU \n')
 
-    for dataset in ['gtea', '50salads']: #, 'breakfast'
-        for split in ([ 1, 2, 3, 4, 5]): #
+    for dataset in ['gtea', '50salads', 'breakfast']:
+        for split in ([ 1, 2, 3, 4, 5]):
             if split == 5 and dataset != '50salads':
                 continue
             print(dataset, split)

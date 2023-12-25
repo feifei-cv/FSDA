@@ -286,7 +286,7 @@ if __name__ == '__main__':
                 continue
             print(dataset, spl)
 
-            config_file = 'DiffAct/configs/' + dataset + '-S' + str(spl) + '.json'
+            config_file = 'configs/' + dataset + '-S' + str(spl) + '.json'
             print('config_file:', config_file)
             all_params = load_config_file(config_file)
             locals().update(all_params)
@@ -356,37 +356,37 @@ if __name__ == '__main__':
                              'F1@{}'.format(cfg.iou_thresholds[1]),
                              'F1@{}'.format(cfg.iou_thresholds[2])])
 
-            # for epoch in range(num_epochs):
-            #     if epoch % log_freq == 0:
-            #         model_path = os.path.join(model_dir, 'epoch-'+str(epoch)+'.model')
-            #         print('======================EPOCH {}====================='.format(epoch))
-            #         for mode in ['decoder-agg']:  # Default: decoder-agg. The results of decoder-noagg are similar
-            #             results = trainer.test(test_test_dataset, mode, device, gt_path, result_dir, model_path=model_path)
-            #         writer.writerow([epoch, '%.4f' % (results['accu']), '%.4f' % (results['edit']),
-            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[0])]),
-            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[1])]),
-            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[2])])])
-            #         curr_val = sum([results[k] for k in results.keys()])
-            #         max_val = max(max_val, curr_val)
-            #         if curr_val == max_val:
-            #             max_epoch = epoch
-            #             max_results = results
+            for epoch in range(num_epochs):
+                if epoch % log_freq == 0:
+                    model_path = os.path.join(model_dir, 'epoch-'+str(epoch)+'.model')
+                    print('======================EPOCH {}====================='.format(epoch))
+                    for mode in ['decoder-agg']:  # Default: decoder-agg. The results of decoder-noagg are similar
+                        results = trainer.test(test_test_dataset, mode, device, gt_path, result_dir, model_path=model_path)
+                    writer.writerow([epoch, '%.4f' % (results['accu']), '%.4f' % (results['edit']),
+                                     '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[0])]),
+                                     '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[1])]),
+                                     '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[2])])])
+                    curr_val = sum([results[k] for k in results.keys()])
+                    max_val = max(max_val, curr_val)
+                    if curr_val == max_val:
+                        max_epoch = epoch
+                        max_results = results
 
-            #### test release model
-            for epoch in range(1):
-                model_path = os.path.join(model_dir+'-1', 'release.model')
-                print('======================EPOCH {}====================='.format(epoch))
-                for mode in ['decoder-agg']:  # Default: decoder-agg. The results of decoder-noagg are similar
-                    results = trainer.test(test_test_dataset, mode, device, gt_path, result_dir, model_path=model_path)
-                writer.writerow([epoch, '%.4f' % (results['accu']), '%.4f' % (results['edit']),
-                                 '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[0])]),
-                                 '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[1])]),
-                                 '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[2])])])
-                curr_val = sum([results[k] for k in results.keys()])
-                max_val = max(max_val, curr_val)
-                if curr_val == max_val:
-                    max_epoch = epoch
-                    max_results = results
+            # #### test release model
+            # for epoch in range(1):
+            #     model_path = os.path.join(model_dir+'-1', 'release.model')
+            #     print('======================EPOCH {}====================='.format(epoch))
+            #     for mode in ['decoder-agg']:  # Default: decoder-agg. The results of decoder-noagg are similar
+            #         results = trainer.test(test_test_dataset, mode, device, gt_path, result_dir, model_path=model_path)
+            #     writer.writerow([epoch, '%.4f' % (results['accu']), '%.4f' % (results['edit']),
+            #                      '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[0])]),
+            #                      '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[1])]),
+            #                      '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[2])])])
+            #     curr_val = sum([results[k] for k in results.keys()])
+            #     max_val = max(max_val, curr_val)
+            #     if curr_val == max_val:
+            #         max_epoch = epoch
+            #         max_results = results
 
             print('EARNED MAXIMUM PERFORMANCE IN EPOCH {}'.format(max_epoch))
             print(max_results)

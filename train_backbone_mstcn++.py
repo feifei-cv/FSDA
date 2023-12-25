@@ -13,7 +13,7 @@ from src.utils import load_meta, eval_txts, Logger
 from src.predict import predict_backbone
 import configs.mstcn_plus_config as cfg
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 
 def init_seeds(seed):
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     with open(mapping_file, 'a') as f:
         f.write('Begin training backbone MS-TCN++ with 3090 GPU \n')
 
-    for dataset in ['50salads']: #,'breakfast''gtea',
+    for dataset in ['gtea', '50salads', 'breakfast']:
         for split in ([1, 2, 3, 4, 5]):
             if split == 5 and dataset != '50salads':
                 continue
