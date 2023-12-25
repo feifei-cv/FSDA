@@ -22,7 +22,7 @@ import configs.refiner_config_mstcn as cfg
 
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 def init_seeds(seed):
 
