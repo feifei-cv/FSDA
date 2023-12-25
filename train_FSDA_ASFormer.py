@@ -77,16 +77,14 @@ if __name__ == '__main__':
                                    dataset, split, model_name)
 
 
-            channel_mask_rate = 0.5
-            cfg.max_epoch = 60
-            # cfg.weight_decay = 2.5e-4
+            channel_mask_rate = 0.3
+            cfg.max_epoch = 50
             # # To prevent over-fitting for GTEA. Early stopping & large dropout rate
-            # if dataset == "gtea":
-            #     channel_mask_rate = 0.5
+            if dataset == "gtea":
+                channel_mask_rate = 0.5
             if dataset == 'breakfast':
-                # channel_mask_rate = 0.5
+                cfg.max_epoch = 30
                 cfg.lr = 1e-5
-                cfg.weight_decay = 1e-5
 
             print('seed:', seed, 'weight_decay:', cfg.weight_decay, 'lr:', cfg.lr,'epoch:', cfg.max_epoch)
             train_data = ActionSegmentationDataset(
