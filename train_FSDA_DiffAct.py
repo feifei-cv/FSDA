@@ -484,8 +484,8 @@ if __name__ == '__main__':
                                          num_classes=num_actions)
             refine_net.to(device)  ### refine net
 
-            # learning_rate = 0.0001
-            learning_rate = 0.00001 ## for 'breakfast'
+            learning_rate = 0.0001
+            # learning_rate = 0.00001 ## for 'breakfast'
             weight_decay = 5e-6
             optimizer = torch.optim.Adam(curr_model.parameters(), lr=learning_rate, weight_decay=weight_decay)
             optimizer_refine = torch.optim.Adam(refine_net.parameters(), lr=learning_rate * 3, weight_decay=weight_decay)
@@ -493,14 +493,14 @@ if __name__ == '__main__':
             ###
             num_epochs = 100
             log_freq = 1
-            # for epoch in range(num_epochs):
-            #     train_loss, acc = frame_segment_adaptation_DiffAct(train_train_dataset, curr_model, num_actions,
-            #                                                        optimizer, optimizer_refine, refine_net, device)
-            #     print("[epoch %d]: lr = %f,  epoch loss = %f,   acc = %f" % (
-            #                                             epoch + 1, optimizer.param_groups[0]["lr"], train_loss, acc))
-            #     if epoch % log_freq == 0:
-            #         torch.save(curr_model.state_dict(), os.path.join(model_dir, "epoch-" + str(epoch) + ".model"))
-            #         torch.save(refine_net.state_dict(), os.path.join(model_dir, "epoch-" + str(epoch) + ".opt"))
+            for epoch in range(num_epochs):
+                train_loss, acc = frame_segment_adaptation_DiffAct(train_train_dataset, curr_model, num_actions,
+                                                                   optimizer, optimizer_refine, refine_net, device)
+                print("[epoch %d]: lr = %f,  epoch loss = %f,   acc = %f" % (
+                                                        epoch + 1, optimizer.param_groups[0]["lr"], train_loss, acc))
+                if epoch % log_freq == 0:
+                    torch.save(curr_model.state_dict(), os.path.join(model_dir, "epoch-" + str(epoch) + ".model"))
+                    torch.save(refine_net.state_dict(), os.path.join(model_dir, "epoch-" + str(epoch) + ".opt"))
 
             #### saving result
             max_epoch = -1
@@ -513,31 +513,10 @@ if __name__ == '__main__':
                              'F1@{}'.format(cfg.iou_thresholds[1]),
                              'F1@{}'.format(cfg.iou_thresholds[2])])
 
-            # for epoch in range(num_epochs):
-            #     if epoch % log_freq == 0:
-            #         model_path = os.path.join(model_dir, 'epoch-'+str(epoch)+'.model')
-            #         refine_path = os.path.join(model_dir, 'epoch-' + str(epoch) + '.opt')
-            #         print('======================EPOCH {}====================='.format(epoch))
-            #         for mode in ['decoder-agg']:  # Default: decoder-agg. The results of decoder-noagg are similar
-            #             results = trainer.refine_predict(test_test_dataset, mode, refine_net, device, gt_path,
-            #                                              result_dir, model_path, refine_path)
-            #         writer.writerow([epoch, '%.4f' % (results['accu']), '%.4f' % (results['edit']),
-            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[0])]),
-            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[1])]),
-            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[2])])])
-            #
-            #         curr_val = sum([results[k] for k in results.keys()])
-            #         max_val = max(max_val, curr_val)
-            #
-            #         if curr_val == max_val:
-            #             max_epoch = epoch
-            #             max_results = results
-
-            ##### test release model
-            for epoch in range(1):
+            for epoch in range(num_epochs):
                 if epoch % log_freq == 0:
-                    model_path = os.path.join(model_dir + '/release.model')
-                    refine_path = os.path.join(model_dir + '/release.opt')
+                    model_path = os.path.join(model_dir, 'epoch-'+str(epoch)+'.model')
+                    refine_path = os.path.join(model_dir, 'epoch-' + str(epoch) + '.opt')
                     print('======================EPOCH {}====================='.format(epoch))
                     for mode in ['decoder-agg']:  # Default: decoder-agg. The results of decoder-noagg are similar
                         results = trainer.refine_predict(test_test_dataset, mode, refine_net, device, gt_path,
@@ -553,6 +532,27 @@ if __name__ == '__main__':
                     if curr_val == max_val:
                         max_epoch = epoch
                         max_results = results
+
+            # ##### test release model
+            # for epoch in range(1):
+            #     if epoch % log_freq == 0:
+            #         model_path = os.path.join(model_dir + '/release.model')
+            #         refine_path = os.path.join(model_dir + '/release.opt')
+            #         print('======================EPOCH {}====================='.format(epoch))
+            #         for mode in ['decoder-agg']:  # Default: decoder-agg. The results of decoder-noagg are similar
+            #             results = trainer.refine_predict(test_test_dataset, mode, refine_net, device, gt_path,
+            #                                              result_dir, model_path, refine_path)
+            #         writer.writerow([epoch, '%.4f' % (results['accu']), '%.4f' % (results['edit']),
+            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[0])]),
+            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[1])]),
+            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[2])])])
+            #
+            #         curr_val = sum([results[k] for k in results.keys()])
+            #         max_val = max(max_val, curr_val)
+            #
+            #         if curr_val == max_val:
+            #             max_epoch = epoch
+            #             max_results = results
 
 
             print('EARNED MAXIMUM PERFORMANCE IN EPOCH {}'.format(max_epoch))

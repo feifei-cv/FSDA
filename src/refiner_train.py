@@ -367,7 +367,7 @@ def frame_segment_adaptation_ASF(train_loader, model, num_classes, optimizer, op
 def frame_segment_adaptation_DiffAct(train_train_dataset, curr_model, num_classes, optimizer, optimizer_refine,
                                      refine_net, device):
 
-    ce = nn.CrossEntropyLoss(ignore_index=-100)
+    # ce = nn.CrossEntropyLoss(ignore_index=-100)
     soft_ce = CrossEntropyLabelSmooth(num_classes, device)
     label_embedding = nn.Embedding(num_classes, 24).to(device)
     # label_embedding = nn.Embedding(num_classes, 128).to(device)  ## breakfast
