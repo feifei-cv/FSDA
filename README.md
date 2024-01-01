@@ -29,4 +29,4 @@ python train_FSDA_DiffAct.py
 
 ## Acknowledgements
 We hugely appreciate for previous researchers in this field. Especially [MS-TCN](https://github.com/yabufarha/ms-tcn), [ASFormer](https://github.com/ChinaYi/ASFormer), [ASRF](https://github.com/yiskw713/asrf),
-[HASR](https://github.com/cotton-ahn/HASR_iccv2021), [DiffAct]([https://github.com/Finspire13/DiffAct]).
+[HASR](https://github.com/cotton-ahn/HASR_iccv2021),[DiffAct](https://github.com/Finspire13/DiffAct).
