@@ -9,7 +9,7 @@ sh ./scripts/install_asrf.sh
 ```
 
 ## Train 
-1. train backbones first.
+1. Train the backbone model first.
 ```
 python train_backbone_mstcn.py 
 python train_backbone_ASFormer.py 
