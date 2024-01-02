@@ -29,7 +29,6 @@ python train_FSDA_DiffAct.py
 3. We also provide some trained models (FSDA-DiffAct) of the results (Table 2) in the model folder.
  ```
 python test_release_model.py
-
 ```
 
 ## Acknowledgements
