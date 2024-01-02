@@ -208,7 +208,7 @@ class Trainer:
 
             return video, output, label
 
-    def test_single_video_f(self, video_idx, test_dataset, mode, refine_net, device, model_path=None):
+    def test_single_video_f(self, video_idx, test_dataset, mode, refine_net, device, refine_path, model_path=None):
 
         assert (test_dataset.mode == 'test')
         assert (mode in ['encoder', 'decoder-noagg', 'decoder-agg'])
@@ -216,9 +216,11 @@ class Trainer:
 
         self.model.eval()
         self.model.to(device)
+        refine_net.eval()
 
         if model_path:
             self.model.load_state_dict(torch.load(model_path))
+            refine_net.load_state_dict(torch.load(refine_path))
 
         if self.set_sampling_seed:
             seed = video_idx
@@ -365,7 +367,7 @@ class Trainer:
             for video_idx in tqdm(range(len(test_dataset))):
 
                 video, pred, label = self.test_single_video_f(
-                    video_idx, test_dataset, mode, refine_net, device, model_path)
+                    video_idx, test_dataset, mode, refine_net, device,refine_path, model_path)
 
                 pred = [self.event_list[int(i)] for i in pred]
 
@@ -399,7 +401,6 @@ class Trainer:
 
 if __name__ == '__main__':
 
-    # init_seeds(seed=1)
     device = 'cuda'
     backbone_name = 'DiffAct'
     model_name = 'FSDA' + '-' + '-'.join([backbone_name])
@@ -491,7 +492,7 @@ if __name__ == '__main__':
             optimizer_refine = torch.optim.Adam(refine_net.parameters(), lr=learning_rate * 3, weight_decay=weight_decay)
 
             ###
-            num_epochs = 100
+            num_epochs = 200
             log_freq = 1
             for epoch in range(num_epochs):
                 train_loss, acc = frame_segment_adaptation_DiffAct(train_train_dataset, curr_model, num_actions,
@@ -538,6 +539,8 @@ if __name__ == '__main__':
             #     if epoch % log_freq == 0:
             #         model_path = os.path.join(model_dir + '/release.model')
             #         refine_path = os.path.join(model_dir + '/release.opt')
+            #         print(model_path)
+            #         print(refine_path)
             #         print('======================EPOCH {}====================='.format(epoch))
             #         for mode in ['decoder-agg']:  # Default: decoder-agg. The results of decoder-noagg are similar
             #             results = trainer.refine_predict(test_test_dataset, mode, refine_net, device, gt_path,
