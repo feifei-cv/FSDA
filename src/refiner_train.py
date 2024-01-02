@@ -367,7 +367,6 @@ def frame_segment_adaptation_ASF(train_loader, model, num_classes, optimizer, op
 def frame_segment_adaptation_DiffAct(train_train_dataset, curr_model, num_classes, optimizer, optimizer_refine,
                                      refine_net, device):
 
-    # ce = nn.CrossEntropyLoss(ignore_index=-100)
     soft_ce = CrossEntropyLabelSmooth(num_classes, device)
     label_embedding = nn.Embedding(num_classes, 24).to(device)
     # label_embedding = nn.Embedding(num_classes, 128).to(device)  ## breakfast
@@ -402,7 +401,6 @@ def frame_segment_adaptation_DiffAct(train_train_dataset, curr_model, num_classe
         loss_ema = loss_ema.sum(0).sum(0).mean()
         loss_ema.backward()
         # train backbone model: reduce over-segmentation
-        # loss = 0.0
         p_frame = refine_net(F.softmax(action_pred, dim=1))
         ### Segment encoder: get segment feature and segment pseudo-label
         action_idx = torch.argmax(action_pred, dim=1).squeeze()

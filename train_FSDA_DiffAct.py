@@ -486,12 +486,13 @@ if __name__ == '__main__':
             refine_net.to(device)  ### refine net
 
             learning_rate = 0.0001
-            # learning_rate = 0.00001 ## for 'breakfast'
+            if dataset == 'breakfast':
+                learning_rate = 0.00001
             weight_decay = 5e-6
             optimizer = torch.optim.Adam(curr_model.parameters(), lr=learning_rate, weight_decay=weight_decay)
             optimizer_refine = torch.optim.Adam(refine_net.parameters(), lr=learning_rate * 3, weight_decay=weight_decay)
 
-            ###
+            ### training
             num_epochs = 200
             log_freq = 1
             for epoch in range(num_epochs):
@@ -533,30 +534,6 @@ if __name__ == '__main__':
                     if curr_val == max_val:
                         max_epoch = epoch
                         max_results = results
-
-            # ##### test release model
-            # for epoch in range(1):
-            #     if epoch % log_freq == 0:
-            #         model_path = os.path.join(model_dir + '/release.model')
-            #         refine_path = os.path.join(model_dir + '/release.opt')
-            #         print(model_path)
-            #         print(refine_path)
-            #         print('======================EPOCH {}====================='.format(epoch))
-            #         for mode in ['decoder-agg']:  # Default: decoder-agg. The results of decoder-noagg are similar
-            #             results = trainer.refine_predict(test_test_dataset, mode, refine_net, device, gt_path,
-            #                                              result_dir, model_path, refine_path)
-            #         writer.writerow([epoch, '%.4f' % (results['accu']), '%.4f' % (results['edit']),
-            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[0])]),
-            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[1])]),
-            #                          '%.4f' % (results['F1@%0.2f' % (cfg.iou_thresholds[2])])])
-            #
-            #         curr_val = sum([results[k] for k in results.keys()])
-            #         max_val = max(max_val, curr_val)
-            #
-            #         if curr_val == max_val:
-            #             max_epoch = epoch
-            #             max_results = results
-
 
             print('EARNED MAXIMUM PERFORMANCE IN EPOCH {}'.format(max_epoch))
             print(max_results)
