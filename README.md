@@ -26,7 +26,7 @@ python train_FSDA_mstcn++.py
 python train_FSDA_ASRF.py
 python train_FSDA_DiffAct.py 
 ```
-3. We also provide some trained models (FSDA-DiffAct) of the SORT results (Table 2) in the model folder.    
+3. We also provide some trained models (FSDA-DiffAct) of the results (Table 2) in the model folder.    
 
 ## Acknowledgements
 We hugely appreciate for previous researchers in this field. Especially [MS-TCN](https://github.com/yabufarha/ms-tcn), [ASFormer](https://github.com/ChinaYi/ASFormer), [ASRF](https://github.com/yiskw713/asrf),
