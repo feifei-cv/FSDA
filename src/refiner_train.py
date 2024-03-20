@@ -209,8 +209,8 @@ def frame_segment_adaptation_tcn(train_loader, model, num_classes, optimizer, op
             # loss_kl = torch.nn.L1Loss()(F.softmax(seg_roll_predict.detach(), dim=1), F.softmax(p_frame, dim=1)) ## l1
             # loss_kl = torch.mean(JS_Divergence_With_Temperature(seg_roll_predict.detach(), p_frame,1)) ## JS
             loss_segment = soft_ce(segment_predictions, segment_soft_label.to(device), weights=confidences)  ## segment loss
-            # loss_align = transport_loss(segment_feat.squeeze(0), f_feat.squeeze(0).permute(1, 0))  ## transport loss
-            loss_align = cal_mmd(f_feat.permute(0, 2, 1), segment_feat, 1)  ## compare with Our transport design
+            loss_align = transport_loss(segment_feat.squeeze(0), f_feat.squeeze(0).permute(1, 0))  ## transport loss
+            # loss_align = cal_mmd(f_feat.permute(0, 2, 1), segment_feat, 1)  ## compare with Our transport design
             loss += (loss_segment + loss_align - loss_kl)
 
         loss.backward()
