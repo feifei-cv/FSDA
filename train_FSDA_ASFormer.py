@@ -41,7 +41,7 @@ def init_seeds(seed):
 
 
 if __name__ == '__main__':
-
+    ### 2024
     seed = 0
     init_seeds(seed=seed)
     device = 'cuda'
